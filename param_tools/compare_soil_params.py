@@ -23,8 +23,8 @@ rcParams.update({'figure.autolayout': True})
 projection = {'urcrnrlat': 27.511827255753555,
               'urcrnrlon': 16.90845094934209,
               'llcrnrlat': 16.534986367884521,
-              'llcrnrlon': 189.2229322311162,
-              'projection': 'lcc',
+              'llcrnrlon': .2229322311162,
+              'projection': 'merc',
               'rsphere': 6371200.0,
               'lon_0': -114,
               'lat_0': 90}
@@ -46,19 +46,19 @@ def main(projection=None, plot_atts_3=None, plot_atts_9=None):
                                   'amax': 0.5,
                                   'amap': cmap_discretize('cm.RdBu_r')},
                        'Ws': {'vmin': 0,
-                              'vmax': 100,
-                              'amin': -50,
-                              'amax': 50,
+                              'vmax': 1000,
+                              'amin': -1000,
+                              'amax': 1000,
                               'amap': cmap_discretize('cm.RdBu_r')},
                        'Ds': {'vmin': 0,
-                              'vmax': 1,
-                              'amin': -0.5,
-                              'amax': 0.5,
+                              'vmax': 0.03,
+                              'amin': -0.01,
+                              'amax': 0.01,
                               'amap': cmap_discretize('cm.RdBu_r')},
                        'Dsmax': {'vmin': 0,
-                                 'vmax': 1,
-                                 'amin': -0.5,
-                                 'amax': 0.5,
+                                 'vmax': 0.001,
+                                 'amin': -0.001,
+                                 'amax': 0.001,
                                  'amap': cmap_discretize('cm.RdBu_r')},
                        'avg_T': {'vmin': -25,
                                  'vmax': 25,
@@ -100,9 +100,9 @@ def main(projection=None, plot_atts_3=None, plot_atts_9=None):
                                       'amax': 0.4,
                                       'amap': cmap_discretize('cm.RdBu_r')},
                        'bubble': {'vmin': 0,
-                                  'vmax': 100,
-                                  'amin': -20,
-                                  'amax': 20,
+                                  'vmax': 75,
+                                  'amin': -10,
+                                  'amax': 10,
                                   'amap': cmap_discretize('cm.RdBu_r')},
                        'quartz': {'vmin': 0,
                                   'vmax': 1,
@@ -120,9 +120,9 @@ def main(projection=None, plot_atts_3=None, plot_atts_9=None):
                                      'amax': 0.5,
                                      'amap': cmap_discretize('cm.RdBu_r')},
                        'expt': {'vmin': 0,
-                                'vmax': 75,
-                                'amin': -50,
-                                'amax': 50,
+                                'vmax': 20,
+                                'amin': -5,
+                                'amax': 5,
                                 'amap': cmap_discretize('cm.RdBu_r')},
                        'depth': {'vmin': 0,
                                  'vmax': 2.5,
@@ -144,12 +144,17 @@ def main(projection=None, plot_atts_3=None, plot_atts_9=None):
     for var in plot_atts_3.keys():
         print('making plot3 for {}'.format(var))
         try:
-            units = d1a[var]['units']
+            if var == 'Dsmax' or var == 'Ds':
+                units = ''
+            elif var == 'Ws':
+                units = 'mm'
+            else:
+                units = d1a[var]['units']
         except:
             units = ''
         try:
-            f = my_plot3(dom['xc'],
-                         dom['yc'],
+            f = my_plot3(dom['lon'],
+                         dom['lat'],
                          d1[var],
                          d2[var],
                          units=units,
@@ -157,20 +162,35 @@ def main(projection=None, plot_atts_3=None, plot_atts_9=None):
                          t1=title1,
                          t2=title2,
                          **plot_atts_3[var])
+            if var == 'Ws':
+                plt.figtext(.5, 0.97, 'd3', fontsize=18, ha='center')
+            elif var == 'Dsmax':
+                plt.figtext(.5, 0.97, 'd2', fontsize=18, ha='center')
+            elif var == 'Ds':
+                plt.figtext(.5, 0.97, 'd1', fontsize=18, ha='center')
+            else:
+                plt.figtext(.5, 0.97, var, fontsize=18, ha='center')
 
-            plt.figtext(.5, 0.94, var, fontsize=18, ha='center')
-
-            plt.figtext(.5, 0.90, d1a[var]['description'], fontsize=12,
+#            plt.figtext(.5, 0.97, var, fontsize=18, ha='center')
+            if var == 'Ws':
+                plt.figtext(.5, 0.93, 'The soil moisture level at which the baseflow transitions from linear to non-linear', fontsize=12, ha='center')
+            elif var == 'Ds':
+                plt.figtext(.5, 0.93, 'Linear reservoir coefficient', fontsize=12, ha='center')
+            elif var == 'Dsmax':
+                plt.figtext(.5, 0.93, 'Non-linear reservoir coefficient', fontsize=12, ha='center')
+            else:
+                plt.figtext(.5, 0.93, d1a[var]['description'], fontsize=12,
                         ha='center')
 
             fname = os.path.join(out_path,
                                  '{}-{}-{}.png'.format(title1, title2, var))
+            print('saving {}'.format(fname))
             f.savefig(fname, format='png', dpi=150, bbox_inches='tight',
                       pad_inches=0)
             print('finished {}'.format(fname))
         except:
-            print('problem with {}'.format(fname))
-
+            raise
+            #print('problem with {}'.format(fname))
     # level plots
     for var in plot_atts_9.keys():
         print('making plot9 for {}'.format(var))
@@ -178,8 +198,8 @@ def main(projection=None, plot_atts_3=None, plot_atts_9=None):
             units = d1a[var]['units']
         except:
             units = ''
-        f = my_plot9(dom['xc'],
-                     dom['yc'],
+        f = my_plot9(dom['lon'],
+                     dom['lat'],
                      d1[var],
                      d2[var],
                      units=units,
@@ -188,7 +208,14 @@ def main(projection=None, plot_atts_3=None, plot_atts_9=None):
                      t2=title2,
                      **plot_atts_9[var])
 
-        plt.figtext(.5, 1.06, var, fontsize=18, ha='center')
+        if var == 'Ws':
+            plt.figtext(.5, 1.06, 'd3', fontsize=18, ha='center')
+        if var == 'Dsmax':
+            plt.figtext(.5, 1.06, 'd2', fontsize=18, ha='center')
+        if var == 'Ds':
+            plt.figtext(.5, 1.06, 'd1', fontsize=18, ha='center')
+        else:
+            plt.figtext(.5, 1.06, var, fontsize=18, ha='center')
         plt.figtext(.5, 1.02, d1a[var]['description'], fontsize=12,
                     ha='center')
 
@@ -227,7 +254,7 @@ def my_plot3(lons, lats, d1, d2, units=None,
     if amax is None:
         amax = np.max(np.abs(anom))
 
-    f, axarr = plt.subplots(1, 3, figsize=(13.5, 4), dpi=150)
+    f, axarr = plt.subplots(1, 3, figsize=(13.5, 5), dpi=150)
     f.tight_layout()
 
     plt.sca(axarr[0])
@@ -299,12 +326,25 @@ def sub_plot_pcolor(lons, lats, data, title=None, cmap=cm.jet,
         vmin = data.min()
     if vmax is None:
         vmax = data.max()
-
+#    border': 1, 'latmi': min(lats)-border, 'latmx': max(lats)+border, 'latmean' = (latmi+latmx)/2., 'lonmi': min(lons)-border, 'lonmx' : max(lons)+border, 'lonmean' : (lonmi+lonmx)/2.}
+    border  = 1
+    latmi   = np.min(lats)-border
+    latmx   = np.max(lats)+border
+    latmean = (latmi+latmx)/2.
+    lonmi   = np.min(lons)-border
+    lonmx   = np.max(lons)+border
+    lonmean = (lonmi+lonmx)/2.
+    projection= {'projection':'merc', 'lat_0':latmean, 'lon_0':lonmean, 'llcrnrlat':latmi,
+                'urcrnrlat':latmx, 'llcrnrlon':lonmi, 'urcrnrlon':lonmx, 'resolution':'i',
+                'area_thresh':1000}
     m = Basemap(**projection)
     m.drawlsmask(land_color='grey', lakes=False)
-    xi, yi = m(np.squeeze(lons), np.squeeze(lats))
-    sp = m.pcolormesh(xi, yi, np.squeeze(data), vmin=vmin, vmax=vmax,
-                      cmap=cmap)
+    if lons.ndim != 2 or lats.ndim != 2:
+	x, y = np.meshgrid(lons, lats)
+    else:
+        x, y = lats, lons
+    sp = m.pcolormesh(x, y, np.squeeze(data), vmin=vmin, vmax=vmax,
+                      cmap=cmap, latlon=True)
     m.drawparallels(np.arange(-80., 81., 20.))
     m.drawmeridians(np.arange(-180., 181., 20.))
     m.drawcoastlines(color='k', linewidth=0.25)
