@@ -30,8 +30,8 @@ MAX_NC_CHARS = 256
 FILLVALUE_F = default_fillvals[NC_DOUBLE]
 FILLVALUE_I = default_fillvals[NC_INT]
 
-XVAR = 'xc'
-YVAR = 'yc'
+XVAR = 'lon'
+YVAR = 'lat'
 
 # -------------------------------------------------------------------- #
 
