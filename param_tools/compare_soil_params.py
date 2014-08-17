@@ -20,14 +20,14 @@ import argparse
 from matplotlib import rcParams
 rcParams.update({'figure.autolayout': True})
 
-projection = {'urcrnrlat': 27.511827255753555,
-              'urcrnrlon': 16.90845094934209,
-              'llcrnrlat': 16.534986367884521,
-              'llcrnrlon': .2229322311162,
-              'projection': 'merc',
-              'rsphere': 6371200.0,
-              'lon_0': -114,
-              'lat_0': 90}
+#projection = {'urcrnrlat': 27.511827255753555,
+#              'urcrnrlon': 16.90845094934209,
+#              'llcrnrlat': 16.534986367884521,
+#              'llcrnrlon': .2229322311162,
+#              'projection': 'merc',
+#              'rsphere': 6371200.0,
+#              'lon_0': -114,
+#              'lat_0': 90}
 
 
 def main(projection=None, plot_atts_3=None, plot_atts_9=None):
@@ -56,9 +56,9 @@ def main(projection=None, plot_atts_3=None, plot_atts_9=None):
                               'amax': 0.01,
                               'amap': cmap_discretize('cm.RdBu_r')},
                        'Dsmax': {'vmin': 0,
-                                 'vmax': 0.001,
-                                 'amin': -0.001,
-                                 'amax': 0.001,
+                                 'vmax': 0.03,
+                                 'amin': -0.03,
+                                 'amax': 0,
                                  'amap': cmap_discretize('cm.RdBu_r')},
                        'avg_T': {'vmin': -25,
                                  'vmax': 25,
@@ -163,23 +163,23 @@ def main(projection=None, plot_atts_3=None, plot_atts_9=None):
                          t2=title2,
                          **plot_atts_3[var])
             if var == 'Ws':
-                plt.figtext(.5, 0.97, 'd3', fontsize=18, ha='center')
+                plt.figtext(.5, 1.0, 'd3', fontsize=18, ha='center')
             elif var == 'Dsmax':
-                plt.figtext(.5, 0.97, 'd2', fontsize=18, ha='center')
+                plt.figtext(.5, 1.0, 'd2', fontsize=18, ha='center')
             elif var == 'Ds':
-                plt.figtext(.5, 0.97, 'd1', fontsize=18, ha='center')
+                plt.figtext(.5, 1.0, 'd1', fontsize=18, ha='center')
             else:
-                plt.figtext(.5, 0.97, var, fontsize=18, ha='center')
+                plt.figtext(.5, 1.0, var, fontsize=18, ha='center')
 
 #            plt.figtext(.5, 0.97, var, fontsize=18, ha='center')
             if var == 'Ws':
-                plt.figtext(.5, 0.93, 'The soil moisture level at which the baseflow transitions from linear to non-linear', fontsize=12, ha='center')
+                plt.figtext(.5, 0.975, 'The soil moisture level at which the baseflow transitions from linear to non-linear', fontsize=12, ha='center')
             elif var == 'Ds':
-                plt.figtext(.5, 0.93, 'Linear reservoir coefficient', fontsize=12, ha='center')
+                plt.figtext(.5, 0.975, 'Linear reservoir coefficient', fontsize=12, ha='center')
             elif var == 'Dsmax':
-                plt.figtext(.5, 0.93, 'Non-linear reservoir coefficient', fontsize=12, ha='center')
+                plt.figtext(.5, 0.975, 'Non-linear reservoir coefficient', fontsize=12, ha='center')
             else:
-                plt.figtext(.5, 0.93, d1a[var]['description'], fontsize=12,
+                plt.figtext(.5, 0.975, d1a[var]['description'], fontsize=12,
                         ha='center')
 
             fname = os.path.join(out_path,
@@ -215,8 +215,8 @@ def main(projection=None, plot_atts_3=None, plot_atts_9=None):
         if var == 'Ds':
             plt.figtext(.5, 1.06, 'd1', fontsize=18, ha='center')
         else:
-            plt.figtext(.5, 1.06, var, fontsize=18, ha='center')
-        plt.figtext(.5, 1.02, d1a[var]['description'], fontsize=12,
+            plt.figtext(.5, 1.03, var, fontsize=18, ha='center')
+        plt.figtext(.5, 1.0, d1a[var]['description'], fontsize=12,
                     ha='center')
 
         fname = os.path.join(out_path,
@@ -327,7 +327,7 @@ def sub_plot_pcolor(lons, lats, data, title=None, cmap=cm.jet,
     if vmax is None:
         vmax = data.max()
 #    border': 1, 'latmi': min(lats)-border, 'latmx': max(lats)+border, 'latmean' = (latmi+latmx)/2., 'lonmi': min(lons)-border, 'lonmx' : max(lons)+border, 'lonmean' : (lonmi+lonmx)/2.}
-    border  = 1
+    border  = 0.01
     latmi   = np.min(lats)-border
     latmx   = np.max(lats)+border
     latmean = (latmi+latmx)/2.
