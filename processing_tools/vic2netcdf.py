@@ -21,7 +21,7 @@ from bisect import bisect_left
 from argparse import ArgumentParser
 from getpass import getuser
 from datetime import datetime, timedelta
-from pandas import read_table, DataFrame
+from pandas import read_table, DataFrame, Series, date_range
 from netCDF4 import Dataset, date2num, num2date, default_fillvals
 from ConfigParser import SafeConfigParser
 from scipy.spatial import cKDTree
@@ -83,6 +83,10 @@ class Point(object):
                                   usecols=self.usecols,
                                   names=self.names)
 
+    def _open_netcdf(self):
+        print('opening ascii file: {0}'.format(self.filename))
+        self.f = Dataset(self.filename, 'r')
+
     def _read_ascii(self, count=None):
         self.df = self._reader.get_chunk(count)
 
@@ -98,13 +102,16 @@ class Point(object):
                                   copy=True) / float(self.bin_mults[i])
 
         self.df = DataFrame(data)
-
         return
 
     def _read_netcdf(self):
-        raise ValueError('Can only take ascii or binary VIC \
-                         output at this time.')
-        print('reading netcdf file: {0}'.format(self.filename))
+
+        data = {}
+        for key in self.names:
+            data[key] = np.squeeze(self.f.variables[key][:])
+
+        self.df = DataFrame(data)
+       
         return
 
     def close(self):
@@ -177,6 +184,9 @@ class Plist(deque):
                 p.open = p._open_binary
                 p.read = p._read_binary
                 p.dt = np.dtype(zip(p.names, p.bin_dtypes))
+            elif fileformat == 'netcdf':
+                p.open = p._open_netcdf
+                p.read = p._read_netcdf
             else:
                 raise ValueError('Unknown file format: {0}'.format(fileformat))
         return
@@ -515,8 +525,10 @@ def main():
             domain_dict = None
 
         # set aside fields dict (sort by column)
-        fields = OrderedDict(sorted(config_dict.iteritems(),
-                             key=lambda x: x[1]['column']))
+        #fields = OrderedDict(sorted(config_dict.iteritems(),
+        #                     key=lambda x: x[1]['column']))
+        
+        fields = config_dict
 
         vic2nc(options, global_atts, domain_dict, fields)
         # ------------------------------------------------------------ #
@@ -591,7 +603,7 @@ def vic2nc(options, global_atts, domain_dict, fields):
         vic_ordtime = date2num(vic_datelist, TIMEUNITS,
                                calendar=options['calendar'])
 
-    elif options['input_file_format'].lower() == 'binary':
+    elif options['input_file_format'].lower() in ['binary', 'netcdf']:
         vic_datelist, vic_ordtime = make_dates(options['bin_start_date'],
                                                options['bin_end_date'],
                                                options['bin_dt_sec'],
@@ -755,8 +767,9 @@ def vic2nc(options, global_atts, domain_dict, fields):
                 else:
                     dtypes.extend([field['type']] * len(field['column']))
             else:
+                print "ELSE!"
                 dtypes.append([prec] * len(field['column']))
-
+                print dtypes
             if options['input_file_format'].lower() == 'binary':
                 if 'bin_dtype' in field:
                     if type(field['bin_dtype']) == list:
