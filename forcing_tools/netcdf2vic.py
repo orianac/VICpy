@@ -12,7 +12,7 @@ import ConfigParser
 ###############################################################################
 def main():
     (files, coord_keys, var_keys, output, binary_mult, binary_type, paths,
-     out_prefix, verbose) = process_command_line()
+     out_prefix, verbose, coord_prec) = process_command_line()
 
     mask = read_netcdf(paths['mask_path'], nc_vars=['mask'])['mask']
     yi, xi = np.nonzero(mask)
@@ -25,7 +25,6 @@ def main():
 
     for i, fname in enumerate(files):
         d = read_netcdf(os.path.join(paths['in_path'], fname),verbose=verbose)
-        print(coord_keys)
         if i == 0:
             # find point locations
             xs = d[coord_keys[1]]
@@ -41,7 +40,8 @@ def main():
                             or (mask[y, x] == 0):
                         active_flag = True
                 if not active_flag:
-                    point = (ys[y, x], xs[y, x])
+#                    point = (ys[y, x], xs[y, x])
+                    point = (ys[y], xs[x])
                     xlist.append(x)
                     ylist.append(y)
                     pointlist.append(point)
@@ -61,7 +61,7 @@ def main():
                              out_prefix, paths['BinaryoutPath'], append)
             if output['ASCII']:
                 write_ASCII(data, point, out_prefix, paths['ASCIIoutPath'],
-                            append)
+                            append, coord_prec)
 
 
 ###############################################################################
@@ -76,9 +76,9 @@ def process_command_line():
     args = parser.parse_args()
 
     (files, coord_keys, var_keys, output, binary_mult, binary_type, paths,
-        out_prefix, verbose) = process_config(args.config)
+        out_prefix, verbose, coord_prec) = process_config(args.config)
     return (files, coord_keys, var_keys, output, binary_mult, binary_type,
-            paths, out_prefix, verbose)
+            paths, out_prefix, verbose, coord_prec)
 
 
 ###############################################################################
@@ -94,6 +94,7 @@ def process_config(config_file):
     config.sections()
     var_keys = config.get('Basics', 'var_keys').split(',')
     coord_keys = config.get('Basics', 'coord_keys').split(',')
+    coord_prec = config.get('Basics', 'Coord_Precision')
     verbose = config.getboolean('Basics', 'verbose')
     WC_Start = config.getint('Basics', 'WC_Start')
     WC_End = config.getint('Basics', 'WC_End')
@@ -123,7 +124,7 @@ def process_config(config_file):
             files.append(File_str.replace('**', str(i)))
 
     return (files, coord_keys, var_keys, output, binary_mult, binary_type,
-            paths, out_prefix, verbose)
+            paths, out_prefix, verbose, coord_prec)
 
 
 ###############################################################################
@@ -158,11 +159,12 @@ def read_netcdf(nc_file, nc_vars=[], coords=False, verbose=False):
 
 
 ###############################################################################
-def write_ASCII(array, point, out_prefix, path, append, verbose=False):
+def write_ASCII(array, point, out_prefix, path, append, coord_prec, verbose=False):
     """
     Write an array to standard VIC ASCII output.
     """
-    fname = out_prefix+('%1.3f' % point[0])+'_'+('%1.3f' % point[1])
+#    fname = out_prefix+('%1.'+coord_prec+'f' % point[0])+'_'+('%1.'+coord_prec+'f' % point[1])
+    fname = out_prefix+(coord_prec % point[0])+'_'+(coord_prec % point[1])
     out_file = os.path.join(path, fname)
     if append:
         f = open(out_file, 'a')
