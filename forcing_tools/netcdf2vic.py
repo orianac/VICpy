@@ -24,14 +24,12 @@ def main():
     append = False
 
     for i, fname in enumerate(files):
-        d = read_netcdf(os.path.join(paths['in_path'], fname),
-                        verbose=verbose)
-
+        d = read_netcdf(os.path.join(paths['in_path'], fname),verbose=verbose)
+        print(coord_keys)
         if i == 0:
-
             # find point locations
-            xs = d['xc']
-            ys = d['yc']
+            xs = d[coord_keys[1]]
+            ys = d[coord_keys[0]]
             posinds = np.nonzero(xs > 180)
             xs[posinds] -= 360
             print('adjusted xs lon minimum')
@@ -79,7 +77,6 @@ def process_command_line():
 
     (files, coord_keys, var_keys, output, binary_mult, binary_type, paths,
         out_prefix, verbose) = process_config(args.config)
-
     return (files, coord_keys, var_keys, output, binary_mult, binary_type,
             paths, out_prefix, verbose)
 
