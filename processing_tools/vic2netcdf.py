@@ -108,8 +108,17 @@ class Point(object):
 
         data = {}
         for key in self.names:
-            data[key] = np.squeeze(self.f.variables[key][:])
-
+            print key
+            if key[0:-1] in ['SoilMoist']:
+                print key
+                layer = key[-1]
+                key = key[0:-1]
+                print key
+                print layer
+                data[key+str(layer)] = np.squeeze(self.f.variables[key][:][:,layer])
+            else:
+                data[key] = np.squeeze(self.f.variables[key][:])
+#             data[key] = np.squeeze(self.f.variables[key][:])
         self.df = DataFrame(data)
        
         return
@@ -767,9 +776,10 @@ def vic2nc(options, global_atts, domain_dict, fields):
                 else:
                     dtypes.extend([field['type']] * len(field['column']))
             else:
-                print "ELSE!"
                 dtypes.append([prec] * len(field['column']))
-                print dtypes
+            print names
+            print usecols
+            print name
             if options['input_file_format'].lower() == 'binary':
                 if 'bin_dtype' in field:
                     if type(field['bin_dtype']) == list:
@@ -959,7 +969,7 @@ def get_file_coords(files):
 
     for i, filename in enumerate(files):
         # fname = path.split(f)[1][-16:] # just look at last 16 characters
-        f = filename[-22:]  # just look at last 16 characters
+        f = filename[-30:]  # just look at last 16 characters
         lat, lon = map(float, findall(r"[-+]?\d*\.\d+|\d+", f))[-2:]
         points.append(Point(lat=lat, lon=lon, filename=filename))
 
