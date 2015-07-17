@@ -894,8 +894,8 @@ def get_file_coords(files):
     points = Plist()
 
     for i, filename in enumerate(files):
-        # fname = path.split(f)[1][-16:] # just look at last 16 characters
-        f = filename[-22:]  # just look at last 16 characters
+        f = filename[-30:]  # Look at last 30 characters of filename to
+			    # find the coordinates in the filename.
         lat, lon = list(map(float, findall(r"[-+]?\d*\.\d+|\d+", f)))[-2:]
         points.append(Point(lat=lat, lon=lon, filename=filename))
 
